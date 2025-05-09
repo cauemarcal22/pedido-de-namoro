@@ -80,10 +80,10 @@
       user-select: none;
       transition: background-color 0.3s ease;
       outline-offset: 2px;
+      touch-action: manipulation;
       /* initial position */
       top: 0;
       right: 0;
-      touch-action: manipulation;
     }
     #naoBtn:hover,
     #naoBtn:focus {
@@ -130,24 +130,36 @@
       const simBtn = document.getElementById('simBtn');
       const mensagem = document.getElementById('mensagem');
       const container = document.querySelector('.container');
+
+      // Helper to clamp values within min and max
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
       
-      // Function to move "Não" to random position inside container but fully visible
+      // Function to move "Não" to a random position inside container fully visible with 15px margin
       function moverNaoBtn() {
         const containerRect = container.getBoundingClientRect();
         const naoRect = naoBtn.getBoundingClientRect();
 
-        // Calculate max allowed positions so the button will fit inside container
-        const maxX = containerRect.width - naoRect.width - 10; // 10px padding to prevent touching edges
-        const maxY = containerRect.height - naoRect.height - 10;
+        const margin = 15;
 
-        // Generate random positions within these ranges
-        let novaX = Math.random() * maxX;
-        let novaY = Math.random() * maxY;
+        // Calculate max allowed positions so the button will fit inside container, respecting margin
+        const maxX = containerRect.width - naoRect.width - margin;
+        const maxY = containerRect.height - naoRect.height - margin;
+
+        // Generate random positions within margin boundaries
+        let novaX = Math.random() * maxX + margin;
+        let novaY = Math.random() * maxY + margin;
+
+        // Safety clamp, just in case
+        novaX = clamp(novaX, margin, maxX);
+        novaY = clamp(novaY, margin, maxY);
 
         // Position relative to container's top-left corner
         naoBtn.style.position = 'absolute';
         naoBtn.style.left = novaX + 'px';
         naoBtn.style.top = novaY + 'px';
+        naoBtn.style.right = 'auto'; // unset right to allow left positioning
       }
 
       naoBtn.addEventListener('click', () => {
@@ -156,24 +168,31 @@
 
       simBtn.addEventListener('click', () => {
         mensagem.textContent = "Você disse SIM! 💖 Estou muito feliz! Vamos ser felizes juntos! 🥰";
-        simBtn.disabled = true;
-        naoBtn.disabled = true;
-        simBtn.style.cursor = 'default';
-        naoBtn.style.cursor = 'default';
+        // Mantém os botões habilitados
       });
 
-      // On window resize, recalc limits but keep position as is (button might move out - acceptable)
+      // On window resize, reposition naoBtn inside visible container if out of bounds
       window.addEventListener('resize', () => {
-        // Optional: We can reposition naoBtn inside container on resize for safety
         const containerRect = container.getBoundingClientRect();
         const naoRect = naoBtn.getBoundingClientRect();
-        if (naoRect.right > containerRect.right || naoRect.bottom > containerRect.bottom) {
-          // reposition if out of bounds
-          moverNaoBtn();
-        }
+        const margin = 15;
+
+        let left = naoBtn.offsetLeft;
+        let top = naoBtn.offsetTop;
+
+        const maxX = containerRect.width - naoRect.width - margin;
+        const maxY = containerRect.height - naoRect.height - margin;
+
+        // Clamp positions inside allowed area
+        left = clamp(left, margin, maxX);
+        top = clamp(top, margin, maxY);
+
+        naoBtn.style.left = left + 'px';
+        naoBtn.style.top = top + 'px';
+        naoBtn.style.right = 'auto';
       });
 
-      // Initialize naoBtn position in top right
+      // Initialize naoBtn position top right
       naoBtn.style.position = 'absolute';
       naoBtn.style.top = '0';
       naoBtn.style.right = '0';

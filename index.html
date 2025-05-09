@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Pedido de Namoro</title>
+  <style>
+    /* General reset and styling */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .container {
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(255, 105, 180, 0.3);
+      text-align: center;
+      padding: 2.5rem 3rem;
+      max-width: 350px;
+      width: 90vw;
+      user-select: none;
+      position: relative;
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: #e91e63;
+      margin-bottom: 1.5rem;
+    }
+    p.subtitle {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      color: #666;
+    }
+    .buttons-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      min-height: 60px;
+    }
+    #simBtn {
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      padding: 0.8rem 2.5rem;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 5px 10px rgba(233, 30, 99, 0.4);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      flex-shrink: 0;
+      outline-offset: 2px;
+    }
+    #simBtn:hover,
+    #simBtn:focus {
+      background-color: #d81b60;
+      box-shadow: 0 6px 12px rgba(216, 27, 96, 0.6);
+      outline: none;
+    }
+    #naoBtn {
+      position: absolute;
+      background-color: #ccc;
+      color: #555;
+      border: none;
+      padding: 0.8rem 2.5rem;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 5px 10px rgba(102, 102, 102, 0.4);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+      outline-offset: 2px;
+      /* initial position */
+      top: 0;
+      right: 0;
+      touch-action: manipulation;
+    }
+    #naoBtn:hover,
+    #naoBtn:focus {
+      background-color: #bbb;
+      outline: none;
+    }
+    #mensagem {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: #4caf50;
+      font-weight: bold;
+      min-height: 30px;
+      user-select: text;
+      min-height: 3em;
+    }
+    @media (max-width: 400px) {
+      .container {
+        max-width: 95vw;
+      }
+      #simBtn, #naoBtn {
+        padding: 0.8rem 1.8rem;
+        font-size: 0.95rem;
+      }
+      #naoBtn {
+        padding: 0.7rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-labelledby="tituloPedido">
+    <h1 id="tituloPedido">Quer namorar comigo?</h1>
+    <p class="subtitle">Me diga a verdade, vai querer ser meu par?</p>
+    <div class="buttons-wrapper" aria-label="Opções Sim ou Não">
+      <button id="simBtn" aria-label="Clique em Sim para aceitar o pedido">Sim</button>
+      <button id="naoBtn" aria-label="Clique em Não para recusar o pedido">Não</button>
+    </div>
+    <div id="mensagem" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <script>
+    (function() {
+      const naoBtn = document.getElementById('naoBtn');
+      const simBtn = document.getElementById('simBtn');
+      const mensagem = document.getElementById('mensagem');
+      const container = document.querySelector('.container');
+      
+      // Function to move "Não" to random position inside container but fully visible
+      function moverNaoBtn() {
+        const containerRect = container.getBoundingClientRect();
+        const naoRect = naoBtn.getBoundingClientRect();
+
+        // Calculate max allowed positions so the button will fit inside container
+        const maxX = containerRect.width - naoRect.width - 10; // 10px padding to prevent touching edges
+        const maxY = containerRect.height - naoRect.height - 10;
+
+        // Generate random positions within these ranges
+        let novaX = Math.random() * maxX;
+        let novaY = Math.random() * maxY;
+
+        // Position relative to container's top-left corner
+        naoBtn.style.position = 'absolute';
+        naoBtn.style.left = novaX + 'px';
+        naoBtn.style.top = novaY + 'px';
+      }
+
+      naoBtn.addEventListener('click', () => {
+        moverNaoBtn();
+      });
+
+      simBtn.addEventListener('click', () => {
+        mensagem.textContent = "Você disse SIM! 💖 Estou muito feliz! Vamos ser felizes juntos! 🥰";
+        simBtn.disabled = true;
+        naoBtn.disabled = true;
+        simBtn.style.cursor = 'default';
+        naoBtn.style.cursor = 'default';
+      });
+
+      // On window resize, recalc limits but keep position as is (button might move out - acceptable)
+      window.addEventListener('resize', () => {
+        // Optional: We can reposition naoBtn inside container on resize for safety
+        const containerRect = container.getBoundingClientRect();
+        const naoRect = naoBtn.getBoundingClientRect();
+        if (naoRect.right > containerRect.right || naoRect.bottom > containerRect.bottom) {
+          // reposition if out of bounds
+          moverNaoBtn();
+        }
+      });
+
+      // Initialize naoBtn position in top right
+      naoBtn.style.position = 'absolute';
+      naoBtn.style.top = '0';
+      naoBtn.style.right = '0';
+
+    })();
+  </script>
+</body>
+</html>
+
